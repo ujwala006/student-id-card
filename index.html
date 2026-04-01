@@ -84,8 +84,74 @@
             transform: translateY(-2px);
         }
 
-        .btn-secondary {
-            background: #6c757d;
+        .btn-print {
+            background: #28a745;
+        }
+
+        .btn-print:hover {
+            background: #218838;
+        }
+
+        .college-logo {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            margin-bottom: 10px;
+        }
+
+        .font-arial { font-family: Arial, sans-serif; }
+        .font-times { font-family: 'Times New Roman', serif; }
+        .font-georgia { font-family: Georgia, serif; }
+        .font-verdana { font-family: Verdana, sans-serif; }
+        .font-helvetica { font-family: Helvetica, sans-serif; }
+        .font-courier { font-family: 'Courier New', monospace; }
+
+        @media print {
+            body {
+                background: white !important;
+                padding: 0 !important;
+            }
+
+            .container {
+                max-width: none !important;
+                margin: 0 !important;
+            }
+
+            h1,
+            .form-container,
+            .no-cards,
+            .btn {
+                display: none !important;
+            }
+
+            .id-cards-container {
+                display: flex !important;
+                flex-wrap: wrap !important;
+                gap: 20px !important;
+                justify-content: center !important;
+            }
+
+            .id-card {
+                page-break-inside: avoid !important;
+                margin: 10px !important;
+                box-shadow: none !important;
+                border: 2px solid #000 !important;
+                transform: none !important;
+            }
+
+            .id-card-body {
+                padding: 15px !important;
+            }
+
+            .student-photo {
+                width: 100px !important;
+                height: 100px !important;
+            }
+
+            .college-logo {
+                width: 60px !important;
+                height: 60px !important;
+            }
         }
 
         .id-cards-container {
@@ -113,6 +179,10 @@
             text-align: center;
             font-size: 1.2em;
             font-weight: bold;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
         }
 
         .id-card-body {
@@ -196,8 +266,18 @@
                 </div>
 
                 <div class="form-group">
+                    <label for="collegeName">College Name:</label>
+                    <input type="text" id="collegeName" required placeholder="Enter college name">
+                </div>
+
+                <div class="form-group">
                     <label for="enrollmentDate">Enrollment Date:</label>
                     <input type="date" id="enrollmentDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="expiryDate">Expiry Date:</label>
+                    <input type="date" id="expiryDate" required>
                 </div>
 
                 <div class="form-group">
@@ -205,8 +285,26 @@
                     <input type="file" id="photo" accept="image/*">
                 </div>
 
+                <div class="form-group">
+                    <label for="collegeLogo">College Logo:</label>
+                    <input type="file" id="collegeLogo" accept="image/*">
+                </div>
+
+                <div class="form-group">
+                    <label for="fontFamily">Font Style:</label>
+                    <select id="fontFamily">
+                        <option value="Arial">Arial</option>
+                        <option value="Times New Roman">Times New Roman</option>
+                        <option value="Georgia">Georgia</option>
+                        <option value="Verdana">Verdana</option>
+                        <option value="Helvetica">Helvetica</option>
+                        <option value="Courier New">Courier New</option>
+                    </select>
+                </div>
+
                 <button type="submit" class="btn">Generate ID Card</button>
                 <button type="button" class="btn btn-secondary" onclick="clearAllCards()">Clear All Cards</button>
+                <button type="button" class="btn btn-print" onclick="printCards()">Print All Cards</button>
             </form>
         </div>
 
@@ -228,17 +326,25 @@
             const studentId = document.getElementById('studentId').value;
             const studentName = document.getElementById('studentName').value;
             const department = document.getElementById('department').value;
+            const collegeName = document.getElementById('collegeName').value;
             const enrollmentDate = document.getElementById('enrollmentDate').value;
+            const expiryDate = document.getElementById('expiryDate').value;
             const photoFile = document.getElementById('photo').files[0];
+            const logoFile = document.getElementById('collegeLogo').files[0];
+            const fontFamily = document.getElementById('fontFamily').value;
 
-            // Format the enrollment date
-            const formattedDate = formatDate(enrollmentDate);
+            // Format the dates
+            const formattedEnrollmentDate = formatDate(enrollmentDate);
+            const formattedExpiryDate = formatDate(expiryDate);
 
             // Create ID card
-            createIDCard(studentId, studentName, department, formattedDate, photoFile);
+            createIDCard(studentId, studentName, department, collegeName, formattedEnrollmentDate, formattedExpiryDate, photoFile, logoFile, fontFamily);
 
             // Clear form
             this.reset();
+
+            // Reset default dates
+            setDefaultDates();
 
             // Hide "no cards" message
             document.getElementById('noCardsMessage').style.display = 'none';
@@ -253,13 +359,18 @@
             });
         }
 
-        function createIDCard(id, name, department, enrollmentDate, photoFile) {
+        function createIDCard(id, name, department, collegeName, enrollmentDate, expiryDate, photoFile, logoFile, fontFamily) {
             cardCount++;
             const cardId = `card-${cardCount}`;
 
+            // Convert font family to CSS class
+            const fontClass = `font-${fontFamily.toLowerCase().replace(' ', '-')}`;
+
             const cardHTML = `
-                <div class="id-card" id="${cardId}">
+                <div class="id-card ${fontClass}" id="${cardId}">
                     <div class="id-card-header">
+                        ${logoFile ? `<img src="${URL.createObjectURL(logoFile)}" alt="College Logo" class="college-logo">` : ''}
+                        <div>${collegeName}</div>
                         STUDENT ID CARD
                     </div>
                     <div class="id-card-body">
@@ -282,6 +393,10 @@
                             <span class="info-label">Enrolled:</span>
                             <span class="info-value">${enrollmentDate}</span>
                         </div>
+                        <div class="student-info">
+                            <span class="info-label">Expires:</span>
+                            <span class="info-value">${expiryDate}</span>
+                        </div>
                     </div>
                 </div>
             `;
@@ -295,8 +410,26 @@
             cardCount = 0;
         }
 
-        // Set default enrollment date to today
-        document.getElementById('enrollmentDate').valueAsDate = new Date();
+        function printCards() {
+            if (cardCount === 0) {
+                alert('No ID cards to print. Please generate some cards first.');
+                return;
+            }
+            window.print();
+        }
+
+        function setDefaultDates() {
+            const today = new Date();
+            document.getElementById('enrollmentDate').valueAsDate = today;
+
+            // Set default expiry date to 4 years from today
+            const expiryDate = new Date(today);
+            expiryDate.setFullYear(today.getFullYear() + 4);
+            document.getElementById('expiryDate').valueAsDate = expiryDate;
+        }
+
+        // Initialize default dates on page load
+        setDefaultDates();
     </script>
 </body>
 </html>
