@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student ID Card Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .form-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="date"]:focus,
+        input[type="file"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-right: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .id-cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .id-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+
+        .id-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .id-card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .id-card-body {
+            padding: 20px;
+        }
+
+        .photo-container {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .student-photo {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #667eea;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .student-info {
+            margin-bottom: 10px;
+        }
+
+        .info-label {
+            font-weight: bold;
+            color: #667eea;
+            display: inline-block;
+            width: 100px;
+        }
+
+        .info-value {
+            color: #333;
+        }
+
+        .no-cards {
+            text-align: center;
+            color: white;
+            font-size: 1.2em;
+            margin-top: 50px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .form-container {
+                padding: 20px;
+            }
+
+            .id-cards-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Student ID Card Generator</h1>
+
+        <div class="form-container">
+            <form id="studentForm">
+                <div class="form-group">
+                    <label for="studentId">Student ID:</label>
+                    <input type="text" id="studentId" required placeholder="Enter student ID (e.g., STU001)">
+                </div>
+
+                <div class="form-group">
+                    <label for="studentName">Full Name:</label>
+                    <input type="text" id="studentName" required placeholder="Enter full name">
+                </div>
+
+                <div class="form-group">
+                    <label for="department">Department:</label>
+                    <input type="text" id="department" required placeholder="Enter department">
+                </div>
+
+                <div class="form-group">
+                    <label for="enrollmentDate">Enrollment Date:</label>
+                    <input type="date" id="enrollmentDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="photo">Photo:</label>
+                    <input type="file" id="photo" accept="image/*">
+                </div>
+
+                <button type="submit" class="btn">Generate ID Card</button>
+                <button type="button" class="btn btn-secondary" onclick="clearAllCards()">Clear All Cards</button>
+            </form>
+        </div>
+
+        <div id="idCardsContainer" class="id-cards-container">
+            <!-- Generated ID cards will appear here -->
+        </div>
+
+        <div id="noCardsMessage" class="no-cards">
+            No ID cards generated yet. Fill out the form above to create your first student ID card!
+        </div>
+    </div>
+
+    <script>
+        let cardCount = 0;
+
+        document.getElementById('studentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const studentId = document.getElementById('studentId').value;
+            const studentName = document.getElementById('studentName').value;
+            const department = document.getElementById('department').value;
+            const enrollmentDate = document.getElementById('enrollmentDate').value;
+            const photoFile = document.getElementById('photo').files[0];
+
+            // Format the enrollment date
+            const formattedDate = formatDate(enrollmentDate);
+
+            // Create ID card
+            createIDCard(studentId, studentName, department, formattedDate, photoFile);
+
+            // Clear form
+            this.reset();
+
+            // Hide "no cards" message
+            document.getElementById('noCardsMessage').style.display = 'none';
+        });
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        function createIDCard(id, name, department, enrollmentDate, photoFile) {
+            cardCount++;
+            const cardId = `card-${cardCount}`;
+
+            const cardHTML = `
+                <div class="id-card" id="${cardId}">
+                    <div class="id-card-header">
+                        STUDENT ID CARD
+                    </div>
+                    <div class="id-card-body">
+                        <div class="photo-container">
+                            <img src="${photoFile ? URL.createObjectURL(photoFile) : 'https://via.placeholder.com/120x120/667eea/white?text=No+Photo'}" alt="Student Photo" class="student-photo">
+                        </div>
+                        <div class="student-info">
+                            <span class="info-label">ID:</span>
+                            <span class="info-value">${id}</span>
+                        </div>
+                        <div class="student-info">
+                            <span class="info-label">Name:</span>
+                            <span class="info-value">${name}</span>
+                        </div>
+                        <div class="student-info">
+                            <span class="info-label">Department:</span>
+                            <span class="info-value">${department}</span>
+                        </div>
+                        <div class="student-info">
+                            <span class="info-label">Enrolled:</span>
+                            <span class="info-value">${enrollmentDate}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('idCardsContainer').insertAdjacentHTML('beforeend', cardHTML);
+        }
+
+        function clearAllCards() {
+            document.getElementById('idCardsContainer').innerHTML = '';
+            document.getElementById('noCardsMessage').style.display = 'block';
+            cardCount = 0;
+        }
+
+        // Set default enrollment date to today
+        document.getElementById('enrollmentDate').valueAsDate = new Date();
+    </script>
+</body>
+</html>
